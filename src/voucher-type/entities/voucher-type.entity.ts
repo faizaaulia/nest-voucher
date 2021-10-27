@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Voucher } from "src/voucher/voucher.entity";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class VoucherType extends BaseEntity {
@@ -7,4 +8,7 @@ export class VoucherType extends BaseEntity {
 
 	@Column({ name: 'type', type: 'varchar' })
 	type: string
+
+	@OneToMany(type => Voucher, voucher => voucher.voucherType)
+	vouchers: Voucher[];
 }
