@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { VoucherTypeModule } from './voucher-type/voucher-type.module';
 import { VoucherModule } from './voucher/voucher.module';
 
@@ -18,7 +19,8 @@ import { VoucherModule } from './voucher/voucher.module';
       synchronize: true,
     }),
     VoucherTypeModule,
-    VoucherModule
+    VoucherModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
