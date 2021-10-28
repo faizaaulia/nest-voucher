@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ApiResponse } from 'src/interfaces/response.interface';
 import { Repository } from 'typeorm';
 import { CreateVoucherTypeDto } from './dto/create-voucher-type.dto';
 import { UpdateVoucherTypeDto } from './dto/update-voucher-type.dto';
@@ -9,38 +10,76 @@ import { VoucherType } from './entities/voucher-type.entity';
 export class VoucherTypeService {
   constructor(@InjectRepository(VoucherType) private readonly repository: Repository<VoucherType>) {};
 
-  create(createVoucherTypeDto: CreateVoucherTypeDto): Promise<VoucherType> {
+  async create(createVoucherTypeDto: CreateVoucherTypeDto): Promise<ApiResponse> {
     const voucherType = this.repository.create(createVoucherTypeDto);
-    return this.repository.save(voucherType);
-  }
+    const data = await this.repository.save(voucherType);
 
-  findAll(): Promise<VoucherType[]> {
-    return this.repository.find();
-  }
-
-  findOne(id: number): Promise<VoucherType> {
-    try {
-      return this.repository.findOneOrFail(id)
-    } catch (error) {
-      throw error;
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'success store data',
+      data
     }
   }
 
-  async update(id: number, updateVoucherTypeDto: UpdateVoucherTypeDto): Promise<VoucherType> {
+  async findAll(): Promise<ApiResponse> {
+    const data = await this.repository.find();
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success get data',
+      data
+    }
+  }
+
+  async findOne(id: number): Promise<ApiResponse> {
+    const data = await this.repository.findOne(id)
+
+    if (!data) {
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `Voucher type ${id} not found`
+      };
+    }
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success get detail data',
+      data
+    }
+  }
+
+  async update(id: number, updateVoucherTypeDto: UpdateVoucherTypeDto): Promise<ApiResponse> {
     const voucherType = await this.repository.preload({
       id: id,
       ...updateVoucherTypeDto
     });
     
     if (!voucherType) {
-      throw new NotFoundException(`Voucher type ${id} not found`);
+      return {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `Voucher type ${id} not found`
+      };
     }
 
-    return this.repository.save(voucherType);
+    const data = await this.repository.save(voucherType);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'success update data',
+      data
+    }
   }
 
   async remove(id: number) {
     const voucherType = await this.repository.findOne(id);
-    return this.repository.remove(voucherType);
+
+    if (!voucherType) {
+      throw new NotFoundException(`Voucher type ${id} not found`);
+    }
+
+    this.repository.remove(voucherType);
+    return {
+      statusCode: HttpStatus.NO_CONTENT,
+      message: 'success delete data',
+    }
   }
 }
